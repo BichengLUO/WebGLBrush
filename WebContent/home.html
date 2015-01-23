@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>工作空间</title>
+<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css"
+	type="text/css">
+<link rel="stylesheet" href="style/homePage.css" type="text/css">
+</head>
+<body>
+	<input type='file' id='fileopen' style='display: none' />
+	<div id="model-up">
+		<div id="model-up-left">
+			<div id="user-avatar">
+				<img src="pic/avatar.png"
+					onError="this.onerror=null;this.src='pic/avatar.png';"
+					id="img-avatar">
+			</div>
+			<div id="user-info">
+				<h3 id="user-names">
+					<span class="glyphicon glyphicon-user"></span> <br> <small><span
+						class="glyphicon glyphicon-home"></span></small> <a type="button"
+						class="btn btn-danger btn-xs" href="index.html"> <span
+						class="glyphicon glyphicon-log-out"></span>&nbsp;注销
+					</a>
+				</h3>
+			</div>
+		</div>
+		<div class="btn-group" id="model-up-right">
+			<button type="button" class="btn btn-success btn-xs" id="btn-new">
+				<span class="glyphicon glyphicon-file"></span>新建
+			</button>
+			<button type="button" class="btn btn-primary btn-xs" id="btn-import">
+				<span class="glyphicon glyphicon-import"></span>导入
+			</button>
+		</div>
+	</div>
+	<div id="model-middle">
+		<div id="wrapper" style="display: none">
+			<img src="pic/model.png"
+				onError="this.onerror=null;this.src='pic/model.png';"
+				class="image-min">
+			<p>small_car.obj</p>
+			<div class="btn-group">
+				<a type="button" class="btn btn-primary btn-xs open_model"> <span
+					class="glyphicon glyphicon-eye-open"></span> 打开
+				</a> <a type="button" class="btn btn-primary btn-xs export_model"> <span
+					class="glyphicon glyphicon-export"></span> 导出
+				</a>
+				<button type="button" id="0"
+					class="btn btn-danger btn-xs delete_model">
+					<span class="glyphicon glyphicon-trash"></span>
+				</button>
+			</div>
+		</div>
+	</div>
+	<div id="model-down">
+		<div class="progress progress-striped active" id="model-progress">
+			<div id="storage" class="progress-bar progress-bar-danger"
+				role="progressbar" aria-valuenow="10" aria-valuemin="0"
+				aria-valuemax="1024" style="width: 10%;"></div>
+		</div>
+		<span class="label label-danger" id="storage_text">已使用10MB空间</span>
+	</div>
+	<div class="modal fade" id="importModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">×</button>
+					<h4 class="modal-title" id="myModalLabel">导入文件</h4>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<label for="inputEmail" class="col-sm-3 control-label">保存的文件名：</label>
+						<div class="col-sm-9">
+							<input type="email" class="form-control input-length"
+								id="import-filename" placeholder="输入文件名">
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+					<button type="button" class="btn btn-primary" id="import">上传</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+	<div class="modal fade" id="alertModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h4 class="modal-title alertTitle"></h4>
+				</div>
+				<div class="modal-body alertBody">
+					<p></p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" data-dismiss="modal">确认</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+	<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/homePage.js"></script>
+	<script src='misc/import.js'></script>
+	<script src='misc/export.js'></script>
+</body>
+</html>

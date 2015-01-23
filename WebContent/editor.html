@@ -1,0 +1,563 @@
+﻿<!doctype html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8' />
+  <title>WebGL Brush</title>
+  <link rel='stylesheet' href='css/style.css' type='text/css' />
+  <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
+  <script src='lib/jquery-2.0.3.min.js'></script>
+  <script src='lib/jquery.mousewheel.js'></script>
+  <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="lib/farbtastic/farbtastic.js"></script>
+  <link rel="stylesheet" href="lib/farbtastic/farbtastic.css" type="text/css" />
+  <script src="lib/d3.min.js"></script>
+  <script src='lib/d3.slider.js'></script>
+  <link rel='stylesheet' href='lib/d3.slider.css' type='text/css' />
+  <script>
+  'use strict';
+  var sculptgl;
+  $(document).ready(function ()
+  {
+    sculptgl = new SculptGL();
+    sculptgl.start();
+  });
+  </script>
+</head>
+<body>
+  <input type='file' id='fileopen' style='display: none'/>
+  <input type='file' id='backgroundopen' style='display: none'/>
+  <input type='file' id='customopen' style='display: none'>
+  <div id="file_control">
+  <div class="btn-group">
+  <button id="import" type="button" class="btn btn-primary btn-xs io-btn">导入</button>
+  <div class="btn-group">
+  <button type="button" class="btn btn-primary btn-xs dropdown-toggle io-btn" data-toggle="dropdown">
+    导出<span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" role="menu" style="z-index:20">
+    <li id="export_obj"><a>导出.OBJ文件</a></li>
+    <li id="export_stl"><a>导出.STL文件</a></li>
+    <li id="export_ply"><a>导出.PLY文件</a></li>
+  </ul>
+</div>
+  </div>
+  <button id="save_model" type="button" class="btn btn-primary btn-xs file_btn">保存</button><br>
+  <button id="exit" type="button" class="btn btn-danger btn-xs file_btn">退出</button>
+  </div>
+  <div id='toolbox1'>
+  <div class="button" id="brush" tag="on"><img class="btn_img" src="ressources/brushes/brush.png" /><br>普通画刷</div><br>
+  <div class="button" id="inflate" tag="off"><img class="btn_img" src="ressources/brushes/inflate.png" /><br>膨胀画刷</div><br>
+  <div class="button" id="drag" tag="off"><img class="btn_img" src="ressources/brushes/drag.png"/><br>拖拽画刷</div><br>
+  <div class="button" id="flatten" tag="off"><img class="btn_img" src="ressources/brushes/flatten.png" /><br>扁平画刷</div><br>
+  <div class="button" id="pinch" tag="off"><img class="btn_img" src="ressources/brushes/pinch.png" /><br>褶皱画刷</div><br>
+  <div class="button" id="crease" tag="off"><img class="btn_img" src="ressources/brushes/crease.png" /><br>捏挤画刷</div><br>
+  </div>
+  <div id="toolbox2">
+  <div class="button" id="smooth" tag="off"><img class="btn_img" src="ressources/brushes/smooth.png"/><br>平滑画刷</div><br>
+  <div class="button" id="scale" tag="off"><img class="btn_img" src="ressources/brushes/scale.png" /><br>缩放画刷</div><br>
+  <div class="button" id="rotate" tag="off"><img class="btn_img" src="ressources/brushes/rotate.png"/><br>旋转画刷</div><br>
+  <div class="button" id="color" tag="off"><img class="btn_img" src="ressources/brushes/color.png" /><br>绘制画刷</div><br>
+  <div class="button" id="cut" tag="off" stat="idle"><img class="btn_img" id="cut_img" src="ressources/brushes/cut.png" /><br>切割模型</div><br>
+  </div>
+  <div id="colorpickerbox">
+  <div id="colorpicker"></div><br>
+  <div><label for="color">选择颜色：</label><input type="text" id="colorinput" name="color" value="#000000" /></div>
+  </div>
+  <div id="control">
+  <div id="radius_text">画刷半径：30</div><br>
+  <div id="radius"></div><br>
+  <div id="intensity_text">画刷强度：0.75</div><br>
+  <div id="intensity"></div>
+  </div>
+  <div id="shaders">
+  材质选择：
+  <div>
+  <img id="clay" class="shader_img" tag="on" src="ressources/clay.jpg" />
+  <img id="phong" class="shader_img" tag="off" src="ressources/phong.jpg" />
+  <img id="normal" class="shader_img" tag="off" src="ressources/normal.jpg" />
+  <img id="bronze" class="shader_img" tag="off" src="ressources/bronze.jpg" />
+  <img id="wireframe" class="shader_img" tag="off" src="ressources/wireframe.jpg" />
+  <img id="transparency" class="shader_img" tag="off" src="ressources/transparency.jpg" />
+  <img id="skin" class="shader_img" tag="off" src="ressources/skin.jpg" />
+  <img id="chavant" class="shader_img" tag="off" src="ressources/chavant.jpg" />
+  <img id="redvelvet" class="shader_img" tag="off" src="ressources/redvelvet.jpg" />
+  <img id="orange" class="shader_img" tag="off" src="ressources/orange.jpg" />
+  <img id="drink" class="shader_img" tag="off" src="ressources/drink.jpg" />
+  <img id="custom" class="shader_img" tag="off" src="ressources/custom.png" />
+  </div>
+  </div>
+  <div id="mode">
+  细分模式：<br>
+  <img id="subdivision" tag="on" class="mode_img" src="ressources/mode/subdivision.png" />
+  <img id="static" tag="off" class="mode_img" src="ressources/mode/static.png" />
+  </div>
+  <div id="camera">
+  透视模式：<br>
+  <img id="perspective" tag="on" class="camera_img" src="ressources/mode/perspective.png" />
+  <img id="orthographic" tag="off" class="camera_img" src="ressources/mode/orthographic.png" />
+  </div>
+  <div id="sym">
+  对称雕刻：<br>
+  <img id="symmetry" tag="off" src="ressources/mode/symmetry.png" />
+  </div>
+  <div id="neg">
+  <img id="negative" tag="off" src="ressources/mode/negative.png" /><br>
+  负向画刷
+  </div>
+  <div id="back">
+  <img id="background" src="ressources/mode/background.png" /><br>
+  更改背景
+  </div>
+  <div id="history">
+  <img id="undo" class="hist_img" src="ressources/mode/undo.png" />
+  <img id="redo" class="hist_img" src="ressources/mode/redo.png" />
+  </div>
+  <canvas id='canvas'></canvas>
+  <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title"></h4>
+      </div>
+      <div class="modal-body">
+        <p></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">确认</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+  <!-- 3rd party libraries -->
+  <script src='lib/dat.gui.min.js'></script>
+  <script src='lib/filesaver.min.js'></script>
+  <script src='lib/gl-matrix-min.js'></script>
+  <script src='lib/poly2tri.min.js'></script>
+
+  <!-- 3D and math stuffs -->
+  <script src='math3d/camera.js'></script>
+  <script src='math3d/geometry.js'></script>
+  <script src='math3d/picking.js'></script>
+  <script src='math3d/grid.js'></script>
+
+  <!-- mesh related stuffs -->
+  <script src='object/mesh.js'></script>
+  <script src='object/aabb.js'></script>
+  <script src='object/triangle.js'></script>
+  <script src='object/vertex.js'></script>
+  <script src='object/octree.js'></script>
+  <script src='object/render.js'></script>
+  <script src='object/shader.js'></script>
+  <script src='object/states.js'></script>
+  <script src='object/background.js'></script>
+
+  <!-- sculpting and topology stuffs -->
+  <script src='editor/sculpt.js'></script>
+  <script src='editor/topology.js'></script>
+  <script src='editor/subdivision.js'></script>
+  <script src='editor/decimation.js'></script>
+  <script src='editor/adaptive.js'></script>
+  <script src='editor/cut.js'></script>
+
+  <!-- misc -->
+  <script src='misc/import.js'></script>
+  <script src='misc/export.js'></script>
+  <script src='misc/utils.js'></script>
+
+  <!-- main -->
+  <script src='sculptgl.js'></script>
+  <script>
+    function hexToRgb(hex) {
+	    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	    return result ? {
+	        r: parseInt(result[1], 16),
+	        g: parseInt(result[2], 16),
+	        b: parseInt(result[3], 16)
+	    } : null;
+	}
+  $(document).ready(function (){
+	  var f = $.farbtastic('#colorpicker');
+	  f.setColor('#000000');
+	  f.linkTo(function (){
+		  var rgb = hexToRgb(f.color);
+		  sculptgl.sculpt_.color_ = [rgb.r, rgb.g, rgb.b];
+		  $('#colorinput').css('background-color', f.color);
+		  $('#colorinput').val(f.color);
+	  });
+	  d3.select('#radius').call(d3.slider().min(5).max(200).value(30).on('slide', function(evt, value) {
+		  sculptgl.picking_.rDisplay_ = value;
+		  $('#radius_text').html("画刷半径：" + value);
+	  }));
+	  d3.select('#intensity').call(d3.slider().min(0).max(100).value(75).on('slide', function(evt, value) {
+		 sculptgl.sculpt_.intensity_ = value/100;
+		 $('#intensity_text').html("画刷强度：" + value/100);
+	  }));
+	  
+	  $('#brush').css('opacity', '1.0');
+	  $('#brush').css('box-shadow', '0 0 5px #AA0000');
+	  $('#clay').css('opacity', '1.0');
+	  $('#clay').css('box-shadow', '0 0 10px #AA0000');
+	  $('#subdivision').css('opacity', '1.0');
+	  $('#subdivision').css('box-shadow', '0 0 2px #AA0000');
+	  $('#perspective').css('opacity', '1.0');
+	  $('#perspective').css('box-shadow', '0 0 2px #AA0000');
+	  $('.button').hover(
+	  function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).fadeTo(100, 1.0);
+		  }
+	  },
+	  function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).fadeTo(100, 0.5);
+		  }
+	  });
+	  $('.shader_img').hover(
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 1.0);
+				  }
+			  },
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 0.5);
+				  }
+	  });
+	  $('.camera_img').hover(
+	  function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).fadeTo(100, 1.0);
+		  }
+	  },
+	  function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).fadeTo(100, 0.5);
+		  }
+	  });
+	  $('.mode_img').hover(
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 1.0);
+				  }
+			  },
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 0.5);
+				  }
+			  });
+	  $('#symmetry').hover(
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 1.0);
+				  } else {
+					  $(this).fadeTo(100, 0.5);
+				  }
+			  },
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 0.5);
+				  } else {
+					  $(this).fadeTo(100, 1.0); 
+				  }
+	  });
+	  $('#negative').hover(
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 1.0);
+				  } else {
+					  $(this).fadeTo(100, 0.5);
+				  }
+			  },
+			  function (){
+				  if ($(this).attr('tag') == 'off') {
+					  $(this).fadeTo(100, 0.5);
+				  } else {
+					  $(this).fadeTo(100, 1.0); 
+				  }
+	  });
+	  $('#symmetry').click(function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).attr('src', 'ressources/mode/symmetry_on.png');
+			  $(this).fadeTo(10, 1.0);
+			  $(this).attr('tag', 'on');
+			  sculptgl.symmetry_ = true;
+		  } else {
+			  $(this).attr('src', 'ressources/mode/symmetry.png');
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  sculptgl.symmetry_ = false;
+		  }
+	  });
+	  $('#negative').click(function (){
+		  if ($(this).attr('tag') == 'off') {
+			  $(this).attr('src', 'ressources/mode/negative_on.png');
+			  $(this).fadeTo(10, 1.0);
+			  $(this).attr('tag', 'on');
+			  sculptgl.sculpt_.negative_ = true;
+		  } else {
+			  $(this).attr('src', 'ressources/mode/negative.png');
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  sculptgl.sculpt_.negative_ = false;
+		  }
+	  });
+	  
+	  $('.button').click(function (){
+		  $('.button').each(function (){
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  $(this).css('box-shadow', '0 0 2px #888888');
+		  });
+		  if ($(this) != $('#cut')) {
+			  $('#cut').attr('stat', 'idle');
+        	  $('#cut_img').attr('src', 'ressources/brushes/cut.png');
+		  }
+		  $(this).fadeTo(10, 1.0);
+		  $(this).attr('tag', 'on');
+		  $(this).css('box-shadow', '0 0 5px #AA0000');
+	  });
+	  $('.shader_img').click(function (){
+		  $('.shader_img').each(function (){
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  $(this).css('box-shadow', '0 0 2px #888888');
+		  });
+		  $(this).fadeTo(10, 1.0);
+		  $(this).attr('tag', 'on');
+		  $(this).css('box-shadow', '0 0 10px #AA0000');
+		  if ($(this) != $('#custom')) {
+			  $('#custom').attr('src', 'ressources/custom.png');
+		  }
+	  });
+	  $('.mode_img').click(function () {
+		  $('.mode_img').each(function (){
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  $(this).css('box-shadow', '0 0 2px #000000');
+		  });
+		  $(this).fadeTo(10, 1.0);
+		  $(this).attr('tag', 'on');
+		  $(this).css('box-shadow', '0 0 2px #AA0000');
+	  });
+	  $('.camera_img').click(function () {
+		  $('.camera_img').each(function (){
+			  $(this).fadeTo(10, 0.5);
+			  $(this).attr('tag', 'off');
+			  $(this).css('box-shadow', '0 0 2px #000000');
+		  });
+		  $(this).fadeTo(10, 1.0);
+		  $(this).attr('tag', 'on');
+		  $(this).css('box-shadow', '0 0 2px #AA0000');
+	  });
+	  $('#brush').click(function (){
+		  sculptgl.sculpt_.tool_ = Sculpt.tool.BRUSH;
+	  });
+	  
+      $('#inflate').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.INFLATE;
+	  });
+      $('#drag').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.DRAG;
+      });
+      $('#flatten').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.FLATTEN;
+      });
+      $('#pinch').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.PINCH;
+      });
+      $('#crease').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.CREASE;
+      });
+      $('#smooth').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.SMOOTH;
+      });
+      $('#scale').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.SCALE;
+      });
+      $('#rotate').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.ROTATE;
+      });
+      $('#color').click(function (){
+    	  sculptgl.sculpt_.tool_ = Sculpt.tool.COLOR;
+      });
+      $('#cut').hover(function () {
+    	  if ($(this).attr('stat') == 'ready') {
+    		  $('#cut_img').attr('src', 'ressources/brushes/cut_go.png');
+    	  }
+	  }, function () {
+		  if ($(this).attr('stat') == 'ready') {
+    		  $('#cut_img').attr('src', 'ressources/brushes/cut_ready.png');
+    	  }
+	  });
+      $('#cut').click(function (){
+    	  if ($(this).attr('stat') == 'idle') {
+    		  sculptgl.sculpt_.tool_ = Sculpt.tool.CUT;
+        	  sculptgl.camera_.type_ = Camera.projType.ORTHOGRAPHIC;
+        	  sculptgl.camera_.updateProjection();
+        	  $('.camera_img').each(function (){
+    			  $(this).fadeTo(10, 0.5);
+    			  $(this).attr('tag', 'off');
+    			  $(this).css('box-shadow', '0 0 2px #000000');
+    		  });
+        	  $('#orthographic').fadeTo(10, 1.0);
+    		  $('#orthographic').attr('tag', 'on');
+    		  $('#orthographic').css('box-shadow', '0 0 2px #AA0000');
+              sculptgl.render();
+              $(this).attr('stat', 'ready');
+        	  $('#cut_img').attr('src', 'ressources/brushes/cut_ready.png');
+    	  }
+          if ($(this).attr('stat') == 'ready') {
+        	  sculptgl.cut_();
+          }
+      });
+      
+      $('#clay').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#phong').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.PHONG, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#normal').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.NORMAL, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#bronze').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+6, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#wireframe').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.WIREFRAME, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#transparency').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.TRANSPARENCY, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#skin').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+2, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#chavant').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+1, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#redvelvet').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+4, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#orange').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+5, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#drink').click(function (){
+    	  if (sculptgl.mesh_)
+          {
+            sculptgl.mesh_.initRender(Shader.mode.MATERIAL+3, sculptgl.textures_, sculptgl.shaders_);
+            sculptgl.render();
+          }
+      });
+      $('#custom').click(function (){
+    	  $('#customopen').trigger('click');
+    	  $(this).attr('src', 'ressources/custom_on.png');
+      });
+      
+      $('#subdivision').click(function (){
+    	  sculptgl.sculpt_.topo_ = Sculpt.topo.SUBDIVISION;
+      });
+      $('#static').click(function (){
+    	  sculptgl.sculpt_.topo_ = Sculpt.topo.STATIC;
+      });
+      
+      $('#perspective').click(function (){
+    	  sculptgl.camera_.type_ = Camera.projType.PERSPECTIVE;
+    	  sculptgl.camera_.updateProjection();
+          sculptgl.render();
+      });
+      $('#orthographic').click(function (){
+    	  sculptgl.camera_.type_ = Camera.projType.ORTHOGRAPHIC;
+    	  sculptgl.camera_.updateProjection();
+          sculptgl.render();
+      });
+      
+      $('#back').click(function (){
+    	  $('#backgroundopen').trigger('click');
+      });
+      
+      $('.hist_img').hover(function (){
+    	  $(this).css('box-shadow', '0 0 5px #AA0000');
+      }, function (){
+    	  $(this).css('box-shadow', '0 0 2px #000000');
+      });
+      $('#undo').click(function (){
+    	  sculptgl.undo_();
+      });
+      $('#redo').click(function (){
+    	  sculptgl.redo_();
+      });
+  });
+  $('#customopen').change(function (event) {
+	  if (event.target.files.length === 0)
+	      return;
+	    var file = event.target.files[0];
+	    if (!file.type.match('image.*'))
+	      return;
+	    var reader = new FileReader();
+	    var self = this;
+	    reader.onload = function (evt)
+	    {
+	      var bg = new Image();
+	      bg.src = evt.target.result;
+	      var gl = sculptgl.gl_;
+	      if (sculptgl.custom_texture_)
+	          gl.deleteTexture(sculptgl.custom_texture_);
+	      var idTex = gl.createTexture();
+	      gl.bindTexture(gl.TEXTURE_2D, idTex);
+	      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, bg);
+	      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_NEAREST);
+	      gl.generateMipmap(gl.TEXTURE_2D);
+	      gl.bindTexture(gl.TEXTURE_2D, null);
+	      sculptgl.custom_texture_ = idTex;
+	      sculptgl.mesh_.initCustomRender(idTex, sculptgl.shaders_);
+	      sculptgl.render();
+	    };
+	    reader.readAsDataURL(file);
+  });
+  </script>
+    <script src='js/editor.js'></script>
+</body>
+</html>

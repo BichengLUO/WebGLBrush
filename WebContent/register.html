@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>注册</title>
+<link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css"
+	type="text/css">
+<link rel="stylesheet" href="style/register.css" type="text/css">
+</head>
+<body>
+	<div id="model-left">
+		<div class="page-header">
+			<h1>
+				基于WebGL的在线模型 <small>三维雕刻系统</small>
+			</h1>
+		</div>
+	</div>
+	<div id="model-right">
+		<div id="form-login" class="form-horizontal" role="form">
+			<div class="form-grp">
+				<label for="inputEmail3" class="col-sm-3 control-label">邮箱:</label>
+				<div class="col-sm-8">
+					<input type="email" class="form-control" id="inputEmail3"
+						placeholder="邮箱">
+				</div>
+			</div>
+			<div class="form-grp">
+				<label for="inputPassword3" class="col-sm-3 control-label">密码:</label>
+				<div class="col-sm-8">
+					<input type="password" class="form-control" id="inputPassword3"
+						placeholder="4-16个字符">
+				</div>
+			</div>
+			<div class="form-grp">
+				<label for="inputPassword3" class="col-sm-3 control-label">重输密码:</label>
+				<div class="col-sm-8">
+					<input type="password" class="form-control"
+						id="inputPasswordAgain3" placeholder="4-16个字符">
+				</div>
+			</div>
+			<div class="form-grp">
+				<label for="inputNickname3" class="col-sm-3 control-label">昵称:</label>
+				<div class="col-sm-8">
+					<input type="text" class="form-control" id="inputNickname3"
+						placeholder="只能包含字母，数字，和下划线">
+				</div>
+			</div>
+			<div class="form-grp">
+				<label for="avatar" class="col-sm-3 control-label">头像:</label>
+				<div class="col-sm-8">
+					<input type="file" id="file-upload" class="file-input"
+						onchange="preview()" /><br> <img src="pic/avatar.png" alt=""
+						id="img-avatar" />
+				</div>
+			</div>
+			<div class="form-grp">
+				<div class="col-sm-offset-2 col-sm-10">
+					<button type="button" class="btn btn-primary btn-style"
+						id="btn-register">注册</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="alertModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-hidden="true">&times;</button>
+					<h4 class="modal-title alertTitle"></h4>
+				</div>
+				<div class="modal-body alertBody">
+					<p></p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" data-dismiss="modal">确认</button>
+				</div>
+			</div>
+			<!-- /.modal-content -->
+		</div>
+		<!-- /.modal-dialog -->
+	</div>
+	<!-- /.modal -->
+	<script type="text/javascript" src="js/jquery-1.11.0.min.js"></script>
+	<script type="text/javascript" src="js/jquery.Jcrop.min.js"></script>
+	<script type="text/javascript" src="lib/bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/register.js"></script>
+</body>
+</html>
